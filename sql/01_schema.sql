@@ -4,7 +4,7 @@ CREATE DATABASE IF NOT EXISTS soccorso
 
 USE soccorso;
 
-CREATE TABLE Utente (
+CREATE TABLE IF NOT EXISTS Utente (
     id           INT AUTO_INCREMENT PRIMARY KEY,
     nome         VARCHAR(100)  NOT NULL,
     cognome      VARCHAR(100)  NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE Utente (
         ON DELETE SET NULL
 );
 
-CREATE TABLE Patente(
+CREATE TABLE IF NOT EXISTS Patente(
     id             INT AUTO_INCREMENT PRIMARY KEY,
     tipo           VARCHAR(50)  NOT NULL,
     data_scadenza  DATE,
