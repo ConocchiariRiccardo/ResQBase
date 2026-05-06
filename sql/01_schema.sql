@@ -87,7 +87,7 @@ id               INT AUTO_INCREMENT PRIMARY KEY,
     FOREIGN KEY (admin_id)     REFERENCES Utente(id)
         ON DELETE SET NULL
 );
-CREATE TABLE partecipazione (
+CREATE TABLE IF NOT EXISTS Partecipazione (
   missione_id  INT NOT NULL,
   operatore_id INT NOT NULL,
   ruolo        ENUM('caposquadra','membro') NOT NULL DEFAULT 'membro',
@@ -98,4 +98,15 @@ CREATE TABLE partecipazione (
     FOREIGN KEY (missione_id)  REFERENCES missione(id)   ON DELETE CASCADE,
   CONSTRAINT fk_part_operatore
     FOREIGN KEY (operatore_id) REFERENCES utente(id)     ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS Missione_Mezzo (
+  missione_id INT NOT NULL,
+  mezzo_id INT NOT NULL,
+  
+  PRIMARY KEY (missione_id, mezzo_id),
+  
+  CONSTRAINT fk_mm_missione
+     FOREIGN KEY (missione_id) REFERENCES Missione(id) ON DELETE CASCADE,
+  CONSTRAINT fk_mm_mezzo
+     FOREIGN KEY (mezzo_id) REFERENCES Mezzo(id) ON DELETE CASCADE
 );
