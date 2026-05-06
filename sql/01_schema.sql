@@ -45,3 +45,14 @@ CREATE TABLE IF NOT EXISTS utente_abilita (
   CONSTRAINT fk_ua_abilita
     FOREIGN KEY (abilita_id) REFERENCES abilita(id) ON DELETE CASCADE
 );
+CREATE TABLE IF NOT EXISTS Mezzo (
+id          INT AUTO_INCREMENT PRIMARY KEY,
+    nome        VARCHAR(150) NOT NULL,
+    descrizione TEXT
+);
+
+CREATE TABLE IF NOT EXISTS Materiale (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    nome        VARCHAR(150) NOT NULL,
+    descrizione TEXT
+);
