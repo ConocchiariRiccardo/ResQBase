@@ -42,3 +42,19 @@ CREATE TABLE IF NOT EXISTS operatore (
     FOREIGN KEY (utente_id) REFERENCES utente(id)
     ON DELETE CASCADE
 );
+CREATE TABLE abilita (
+  id          INT          AUTO_INCREMENT PRIMARY KEY,
+  nome        VARCHAR(100) NOT NULL UNIQUE,
+  descrizione TEXT
+);
+CREATE TABLE utente_abilita (
+  utente_id  INT NOT NULL,
+  abilita_id INT NOT NULL,
+
+  PRIMARY KEY (utente_id, abilita_id),
+
+  CONSTRAINT fk_ua_utente
+    FOREIGN KEY (utente_id)  REFERENCES utente(id)  ON DELETE CASCADE,
+  CONSTRAINT fk_ua_abilita
+    FOREIGN KEY (abilita_id) REFERENCES abilita(id) ON DELETE CASCADE
+);
