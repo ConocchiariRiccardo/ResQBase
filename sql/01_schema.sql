@@ -29,12 +29,12 @@ CREATE TABLE IF NOT EXISTS Patente(
     FOREIGN KEY (utente_id) REFERENCES Utente(id)
         ON DELETE CASCADE
 );
-CREATE TABLE IF NOT EXISTS abilita (
+CREATE TABLE IF NOT EXISTS Abilita (
   id          INT          AUTO_INCREMENT PRIMARY KEY,
   nome        VARCHAR(100) NOT NULL UNIQUE,
   descrizione TEXT
 );
-CREATE TABLE IF NOT EXISTS utente_abilita (
+CREATE TABLE IF NOT EXISTS Utente_abilita (
   utente_id  INT NOT NULL,
   abilita_id INT NOT NULL,
 
@@ -55,4 +55,20 @@ CREATE TABLE IF NOT EXISTS Materiale (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     nome        VARCHAR(150) NOT NULL,
     descrizione TEXT
+);
+CREATE TABLE IF NOT EXISTS Richiesta (
+  id                INT          AUTO_INCREMENT PRIMARY KEY,
+  descrizione       TEXT         NOT NULL,
+  indirizzo         VARCHAR(255),
+  latitudine        DECIMAL(9,6),
+  longitudine       DECIMAL(9,6),
+  nome_segnalante   VARCHAR(200) NOT NULL,
+  email_segnalante  VARCHAR(255) NOT NULL,
+  ip_origine        VARCHAR(45)  NOT NULL,
+  token_validazione VARCHAR(128) NOT NULL UNIQUE,
+  creata_at         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  validata_at       DATETIME,
+  stato             ENUM('inviata','attiva','in_corso','chiusa','annullata')
+                                 NOT NULL DEFAULT 'inviata',
+  foto_path         VARCHAR(500)
 );
