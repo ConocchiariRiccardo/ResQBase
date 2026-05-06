@@ -29,11 +29,13 @@ CREATE TABLE IF NOT EXISTS Patente(
     FOREIGN KEY (utente_id) REFERENCES Utente(id)
         ON DELETE CASCADE
 );
+
 CREATE TABLE IF NOT EXISTS Abilita (
   id          INT          AUTO_INCREMENT PRIMARY KEY,
   nome        VARCHAR(100) NOT NULL UNIQUE,
   descrizione TEXT
 );
+
 CREATE TABLE IF NOT EXISTS Utente_abilita (
   utente_id  INT NOT NULL,
   abilita_id INT NOT NULL,
@@ -45,6 +47,7 @@ CREATE TABLE IF NOT EXISTS Utente_abilita (
   CONSTRAINT fk_ua_abilita
     FOREIGN KEY (abilita_id) REFERENCES abilita(id) ON DELETE CASCADE
 );
+
 CREATE TABLE IF NOT EXISTS Mezzo (
 id          INT AUTO_INCREMENT PRIMARY KEY,
     nome        VARCHAR(150) NOT NULL,
@@ -56,6 +59,7 @@ CREATE TABLE IF NOT EXISTS Materiale (
     nome        VARCHAR(150) NOT NULL,
     descrizione TEXT
 );
+
 CREATE TABLE IF NOT EXISTS Richiesta (
   id                INT          AUTO_INCREMENT PRIMARY KEY,
   descrizione       TEXT         NOT NULL,
@@ -72,6 +76,7 @@ CREATE TABLE IF NOT EXISTS Richiesta (
                                  NOT NULL DEFAULT 'inviata',
   foto_path         VARCHAR(500)
 );
+
 CREATE TABLE IF NOT EXISTS Missione (
 id               INT AUTO_INCREMENT PRIMARY KEY,
     richiesta_id     INT          NOT NULL UNIQUE,
@@ -87,6 +92,7 @@ id               INT AUTO_INCREMENT PRIMARY KEY,
     FOREIGN KEY (admin_id)     REFERENCES Utente(id)
         ON DELETE SET NULL
 );
+
 CREATE TABLE IF NOT EXISTS Partecipazione (
   missione_id  INT NOT NULL,
   operatore_id INT NOT NULL,
@@ -99,6 +105,7 @@ CREATE TABLE IF NOT EXISTS Partecipazione (
   CONSTRAINT fk_part_operatore
     FOREIGN KEY (operatore_id) REFERENCES utente(id)     ON DELETE CASCADE
 );
+
 CREATE TABLE IF NOT EXISTS Missione_Mezzo (
   missione_id INT NOT NULL,
   mezzo_id INT NOT NULL,
