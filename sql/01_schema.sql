@@ -110,3 +110,28 @@ CREATE TABLE IF NOT EXISTS Missione_Mezzo (
   CONSTRAINT fk_mm_mezzo
      FOREIGN KEY (mezzo_id) REFERENCES Mezzo(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS Missione_materiale (
+  missione_id  INT NOT NULL,
+  materiale_id INT NOT NULL,
+
+  PRIMARY KEY (missione_id, materiale_id),
+
+  CONSTRAINT fk_mmat_missione
+    FOREIGN KEY (missione_id)  REFERENCES missione(id)    ON DELETE CASCADE,
+  CONSTRAINT fk_mmat_materiale
+    FOREIGN KEY (materiale_id) REFERENCES materiale(id)   ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Aggiornamento (
+  id          INT       AUTO_INCREMENT PRIMARY KEY,
+  missione_id INT       NOT NULL,
+  admin_id    INT       NOT NULL,
+  testo       TEXT      NOT NULL,
+  inserito_il TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT fk_agg_missione
+    FOREIGN KEY (missione_id) REFERENCES missione(id)  ON DELETE CASCADE,
+  CONSTRAINT fk_agg_admin
+    FOREIGN KEY (admin_id)    REFERENCES utente(id)
+);
