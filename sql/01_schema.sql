@@ -18,3 +18,12 @@ CREATE TABLE Utente (
     FOREIGN KEY (creato_da) REFERENCES Utente(id)
         ON DELETE SET NULL
 );
+
+CREATE TABLE Patente(
+    id             INT AUTO_INCREMENT PRIMARY KEY,
+    tipo           VARCHAR(50)  NOT NULL,
+    data_scadenza  DATE,
+    utente_id      INT          NOT NULL,
+    FOREIGN KEY (utente_id) REFERENCES Utente(id)
+        ON DELETE CASCADE
+);
