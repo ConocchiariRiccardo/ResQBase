@@ -72,3 +72,18 @@ CREATE TABLE IF NOT EXISTS Richiesta (
                                  NOT NULL DEFAULT 'inviata',
   foto_path         VARCHAR(500)
 );
+CREATE TABLE IF NOT EXISTS Missione (
+id               INT AUTO_INCREMENT PRIMARY KEY,
+    richiesta_id     INT          NOT NULL UNIQUE,
+    obiettivo        TEXT         NOT NULL,
+    posizione        VARCHAR(255),
+    inizio           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fine             DATETIME,
+    livello_successo TINYINT      CHECK (livello_successo BETWEEN 0 AND 5),
+    commenti         TEXT,
+    stato            ENUM('in_corso','chiusa') NOT NULL DEFAULT 'in_corso',
+    admin_id         INT,
+    FOREIGN KEY (richiesta_id) REFERENCES Richiesta(id),
+    FOREIGN KEY (admin_id)     REFERENCES Utente(id)
+        ON DELETE SET NULL
+);
