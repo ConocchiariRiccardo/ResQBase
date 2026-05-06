@@ -27,3 +27,18 @@ CREATE TABLE IF NOT EXISTS Patente(
     FOREIGN KEY (utente_id) REFERENCES Utente(id)
         ON DELETE CASCADE
 );
+CREATE TABLE IF NOT EXISTS amministratore (
+  utente_id INT PRIMARY KEY,
+
+  CONSTRAINT fk_admin_utente
+    FOREIGN KEY (utente_id) REFERENCES utente(id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS operatore (
+  utente_id INT PRIMARY KEY,
+
+  CONSTRAINT fk_op_utente
+    FOREIGN KEY (utente_id) REFERENCES utente(id)
+    ON DELETE CASCADE
+);
