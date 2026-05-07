@@ -58,7 +58,16 @@ BEGIN
 	 END IF;
   END IF;
 END$$ 
-
+-- Trigger 4: Aggiorna stato Richiesta quando si crea una Missione
+DROP TRIGGER IF EXISTS trg_aggiorna_stato_richiesta$$
+CREATE TRIGGER trg_aggiorna_stato_richiesta
+AFTER INSERT ON missione
+FOR EACH ROW
+BEGIN
+    UPDATE richiesta 
+    SET stato = 'in_corso'
+    WHERE id = NEW.richiesta_id;
+END$$
 DELIMITER ;
 
          
