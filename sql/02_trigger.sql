@@ -20,10 +20,6 @@ BEGIN
    END IF;
 END $$
 
-DELIMITER ;
-
-DELIMITER $$
-
 -- Trigger 2: deve essere presente almeno un caposquadra per missione
 DROP TRIGGER IF EXISTS trg_check_caposquadra$$
 CREATE TRIGGER trg_check_caposquadra
@@ -42,10 +38,6 @@ BEGIN
          SET MESSAGE_TEXT = 'Ogni missione deve avere almeno un caposquadra.';
    END IF;
 END$$
-
-DELIMITER ;
-
-DELIMITER $$
 
 -- Trigger 3: quando si aggiorna una missione portando il suo stato a 'chiusa', bisogna controllare che
 -- fine e livello_successivo siano valorizzati. Se mancano l'operazione si blocca
