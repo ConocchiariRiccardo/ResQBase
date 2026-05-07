@@ -6,7 +6,7 @@ CREATE DATABASE IF NOT EXISTS soccorso
 
 USE soccorso;
 
-CREATE TABLE IF NOT EXISTS Utente (
+CREATE TABLE IF NOT EXISTS utente (
     id           INT AUTO_INCREMENT PRIMARY KEY,
     nome         VARCHAR(100)  NOT NULL,
     cognome      VARCHAR(100)  NOT NULL,
@@ -17,26 +17,26 @@ CREATE TABLE IF NOT EXISTS Utente (
     creato_il    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     creato_da    INT,
     data_nascita DATE,
-    FOREIGN KEY (creato_da) REFERENCES Utente(id)
+    FOREIGN KEY (creato_da) REFERENCES utente(id)
         ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS Patente(
+CREATE TABLE IF NOT EXISTS patente(
     id             INT AUTO_INCREMENT PRIMARY KEY,
     tipo           VARCHAR(50)  NOT NULL,
     data_scadenza  DATE,
     utente_id      INT          NOT NULL,
-    FOREIGN KEY (utente_id) REFERENCES Utente(id)
+    FOREIGN KEY (utente_id) REFERENCES utente(id)
         ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS Abilita (
+CREATE TABLE IF NOT EXISTS abilita (
   id          INT          AUTO_INCREMENT PRIMARY KEY,
   nome        VARCHAR(100) NOT NULL UNIQUE,
   descrizione TEXT
 );
 
-CREATE TABLE IF NOT EXISTS Utente_abilita (
+CREATE TABLE IF NOT EXISTS utente_abilita (
   utente_id  INT NOT NULL,
   abilita_id INT NOT NULL,
 
@@ -48,19 +48,19 @@ CREATE TABLE IF NOT EXISTS Utente_abilita (
     FOREIGN KEY (abilita_id) REFERENCES abilita(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS Mezzo (
+CREATE TABLE IF NOT EXISTS mezzo (
 id          INT AUTO_INCREMENT PRIMARY KEY,
     nome        VARCHAR(150) NOT NULL,
     descrizione TEXT
 );
 
-CREATE TABLE IF NOT EXISTS Materiale (
+CREATE TABLE IF NOT EXISTS materiale (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     nome        VARCHAR(150) NOT NULL,
     descrizione TEXT
 );
 
-CREATE TABLE IF NOT EXISTS Richiesta (
+CREATE TABLE IF NOT EXISTS richiesta (
   id                INT          AUTO_INCREMENT PRIMARY KEY,
   descrizione       TEXT         NOT NULL,
   indirizzo         VARCHAR(255),
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS Richiesta (
   foto_path         VARCHAR(500)
 );
 
-CREATE TABLE IF NOT EXISTS Missione (
+CREATE TABLE IF NOT EXISTS missione (
 id               INT AUTO_INCREMENT PRIMARY KEY,
     richiesta_id     INT          NOT NULL UNIQUE,
     obiettivo        TEXT         NOT NULL,
@@ -88,12 +88,12 @@ id               INT AUTO_INCREMENT PRIMARY KEY,
     commenti         TEXT,
     stato            ENUM('in_corso','chiusa') NOT NULL DEFAULT 'in_corso',
     admin_id         INT,
-    FOREIGN KEY (richiesta_id) REFERENCES Richiesta(id),
-    FOREIGN KEY (admin_id)     REFERENCES Utente(id)
+    FOREIGN KEY (richiesta_id) REFERENCES richiesta(id),
+    FOREIGN KEY (admin_id)     REFERENCES utente(id)
         ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS Partecipazione (
+CREATE TABLE IF NOT EXISTS partecipazione (
   missione_id  INT NOT NULL,
   operatore_id INT NOT NULL,
   ruolo        ENUM('caposquadra','membro') NOT NULL DEFAULT 'membro',
@@ -106,19 +106,19 @@ CREATE TABLE IF NOT EXISTS Partecipazione (
     FOREIGN KEY (operatore_id) REFERENCES utente(id)     ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS Missione_Mezzo (
+CREATE TABLE IF NOT EXISTS missione_mezzo (
   missione_id INT NOT NULL,
   mezzo_id INT NOT NULL,
   
   PRIMARY KEY (missione_id, mezzo_id),
   
   CONSTRAINT fk_mm_missione
-     FOREIGN KEY (missione_id) REFERENCES Missione(id) ON DELETE CASCADE,
+     FOREIGN KEY (missione_id) REFERENCES missione(id) ON DELETE CASCADE,
   CONSTRAINT fk_mm_mezzo
-     FOREIGN KEY (mezzo_id) REFERENCES Mezzo(id) ON DELETE CASCADE
+     FOREIGN KEY (mezzo_id) REFERENCES mezzo(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS Missione_materiale (
+CREATE TABLE IF NOT EXISTS missione_materiale (
   missione_id  INT NOT NULL,
   materiale_id INT NOT NULL,
 
@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS Missione_materiale (
     FOREIGN KEY (materiale_id) REFERENCES materiale(id)   ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS Aggiornamento (
+CREATE TABLE IF NOT EXISTS aggiornamento (
   id          INT       AUTO_INCREMENT PRIMARY KEY,
   missione_id INT       NOT NULL,
   admin_id    INT       NOT NULL,
