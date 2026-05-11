@@ -80,18 +80,20 @@ END$$
 DELIMITER ;
 
 -- Query 5: calcolo del numero di missioni svolte da un operatore   
-DROP PROCEDURE IF EXISTS Query_6_1;
+DROP PROCEDURE IF EXISTS Query_5;
 DELIMITER $$
-CREATE PROCEDURE Query_6_1(IN p_anno INT)
+CREATE PROCEDURE Query_5()
 BEGIN
-    SELECT YEAR(inizio) AS anno,
-           AVG(TIMESTAMPDIFF(MINUTE, inizio, fine)) AS durata_media_minuti
-    FROM missione
-    WHERE fine IS NOT NULL
-    AND YEAR(inizio) = p_anno
-    GROUP BY YEAR(inizio);
+    SELECT u.id, u.nome, u.cognome,
+           COUNT(p.missione_id) AS num_missioni
+    FROM utente u
+    LEFT JOIN partecipazione p ON p.operatore_id = u.id
+    WHERE u.ruolo = 'operatore'
+    GROUP BY u.id, u.nome, u.cognome
+    ORDER BY num_missioni DESC;
 END$$
 DELIMITER ;
+
 
 -- Query 6: questa query abbiamo deciso di dividerla in due sotto-query, entrambe calcolano il tempo medio
 -- di svolgimento, ma la 6.1 calcola il tempo medio di svolgimento delle missioni in un anno specifico, mentre
