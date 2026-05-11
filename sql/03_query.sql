@@ -49,17 +49,45 @@ SET
 WHERE id = 1;
 
 -- Query 4: estrazione della lista degli operatori non coinvolti in missioni in corso
-
+SELECT u.id, u.nome, u.cognome, u.email
+FROM utente u
+WHERE u.ruolo = 'operatore'
+AND u.id NOT IN (
+    SELECT p.operatore_id
+    FROM partecipazione p
+    JOIN missione m ON m.id = p.missione_id
+    WHERE m.stato = 'in_corso'
+);
 -- Query 5: calcolo del numero di missioni svolte da un operatore   
-
+SELECT u.id, u.nome, u.cognome,
+       COUNT(p.missione_id) AS num_missioni
+FROM utente u
+LEFT JOIN partecipazione p ON p.operatore_id = u.id
+WHERE u.ruolo = 'operatore'
+GROUP BY u.id, u.nome, u.cognome
+ORDER BY num_missioni DESC;
 -- Query 6: questa query abbiamo deciso di dividerla in due sotto-query, entrambe calcolano il tempo medio
 -- di svolgimento, ma la 6.1 calcola il tempo medio di svolgimento delle missioni in un anno specifico, mentre
 -- la 6.2 calcola il tempo medio di svolgimento per ciascun caposquadra
 
 -- Query 6.1:
+SELECT YEAR(inizio) AS anno,
+       AVG(TIMESTAMPDIFF(MINUTE, inizio, fine)) AS durata_media_minuti
+FROM missione
+WHERE fine IS NOT NULL
+AND YEAR(inizio) = 2026
+GROUP BY YEAR(inizio);
 
 -- Query 6.2:
-
+SELECT u.id, u.nome, u.cognome,
+       AVG(TIMESTAMPDIFF(MINUTE, m.inizio, m.fine)) AS durata_media_minuti
+FROM partecipazione p
+JOIN missione m ON m.id = p.missione_id
+JOIN utente u ON u.id = p.operatore_id
+WHERE p.ruolo = 'caposquadra'
+AND m.fine IS NOT NULL
+GROUP BY u.id, u.nome, u.cognome
+ORDER BY durata_media_minuti ASC;
 -- Query 7: anche questa query è stata divisa in due sotto-query, entrambe calcolano il numero di richieste, ma la 7.1 
 -- calcola il numero di richieste dallo stesso indirizzo email nelle ultime 36 ore, mentre la 7.2 calcola
 -- il numero di richieste dallo stesso indirizzo IP nelle ultime 36 ore
