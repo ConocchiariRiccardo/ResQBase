@@ -41,26 +41,49 @@ END$$
 
 -- Trigger 3: quando si aggiorna una missione portando il suo stato a 'chiusa', bisogna controllare che
 -- fine e livello_successivo siano valorizzati. Se mancano l'operazione si blocca
-DROP TRIGGER IF EXISTS trg_check_chiusura_missione$$
-CREATE TRIGGER trg_check_chiusura_missione
+DROP TRIGGER IF EXISTS trg_check_update_missione$$
+CREATE TRIGGER trg_check_update_missione
 BEFORE UPDATE ON missione
 FOR EACH ROW
 BEGIN
+  -- (ex T3) controlli sulla chiusura
   IF NEW.stato = 'chiusa' THEN
-     IF NEW.fine IS NULL THEN
-        SIGNAL SQLSTATE '45000'
-           SET MESSAGE_TEXT = 'Per chiudere la missione bisogna specificare la data di fine.';
-	 END IF;
-     
-     IF NEW.livello_successo IS NULL THEN
-        SIGNAL SQLSTATE '45000'
-           SET MESSAGE_TEXT = 'Per chiudere una missione bisogna specificare il livello successivo.';
-	 END IF;
+    IF NEW.fine IS NULL THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Per chiudere la missione bisogna specificare la data di fine.';
+    END IF;
+    IF NEW.livello_successo IS NULL THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Per chiudere una missione bisogna specificare il livello di successo.';
+    END IF;
   END IF;
-END$$ 
 
--- Trigger 4: ogni volta che viene inserita una nuova missione aggiorna automaticamente lo stato della 
--- richiesta da 'attiva' a 'in_corso'
+  -- (ex T7) fine deve essere successiva all'inizio
+  IF NEW.fine IS NOT NULL AND NEW.fine <= NEW.inizio THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'La data di fine deve essere successiva alla data di inizio.';
+  END IF;
+END$$
+
+-- T4.1: PRIMA di creare la missione, verifica che la richiesta sia attiva
+DROP TRIGGER IF EXISTS trg_check_richiesta_attiva$$
+CREATE TRIGGER trg_check_richiesta_attiva
+BEFORE INSERT ON missione
+FOR EACH ROW
+BEGIN
+    DECLARE v_stato ENUM('inviata','attiva','in_corso','chiusa','annullata');
+    
+    SELECT stato INTO v_stato
+    FROM richiesta
+    WHERE id = NEW.richiesta_id;
+    
+    IF v_stato != 'attiva' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'La richiesta deve essere in stato attivo per avviare una missione.';
+    END IF;
+END$$
+
+-- T4.2: DOPO la creazione, porta la richiesta a 'in_corso'
 DROP TRIGGER IF EXISTS trg_aggiorna_stato_richiesta$$
 CREATE TRIGGER trg_aggiorna_stato_richiesta
 AFTER INSERT ON missione
@@ -69,6 +92,19 @@ BEGIN
     UPDATE richiesta 
     SET stato = 'in_corso'
     WHERE id = NEW.richiesta_id;
+END$$
+
+-- T4.3: DOPO la chiusura della missione, porta la richiesta a 'chiusa'
+DROP TRIGGER IF EXISTS trg_chiudi_richiesta$$
+CREATE TRIGGER trg_chiudi_richiesta
+AFTER UPDATE ON missione
+FOR EACH ROW
+BEGIN
+    IF NEW.stato = 'chiusa' AND OLD.stato != 'chiusa' THEN
+        UPDATE richiesta 
+        SET stato = 'chiusa'
+        WHERE id = NEW.richiesta_id;
+    END IF;
 END$$
 
 -- Trigger 5: solo gli admin possono inserire aggiornamenti
@@ -104,19 +140,7 @@ BEGIN
    SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'L email del segnalante non è modificabile dopo l inserimento';
    END IF;
-END$$
-
--- Trigger 7: controllo di sequenzialità temporale, ovvero l'inizio deve essere prima della fine
-DROP TRIGGER IF EXISTS trg_check_sequenzialita_temporale$$
-CREATE TRIGGER trg_check_sequenzialita_temporale
-BEFORE UPDATE ON missione
-FOR EACH ROW
-BEGIN
-   IF NEW.fine IS NOT NULL AND NEW.fine <= NEW.inizio THEN -- controlla che fine sia strettamete maggiore di inizio
-      SIGNAL SQLSTATE '45000'
-         SET MESSAGE_TEXT = 'La data di fine deve essere successiva alla data di inizio.';
-   END IF;
-END$$  
+END$$ 
 
 -- Trigger 8: noi il trigger 8 lo abbiamo diviso in 3 sotto-trigger in quanto
 -- rappresentano tutti e tre l'immutabilità dello storico ma in tre contesti diversi:
