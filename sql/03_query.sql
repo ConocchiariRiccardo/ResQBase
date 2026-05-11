@@ -64,9 +64,19 @@ WHERE id = 1;
 -- calcola il numero di richieste dallo stesso indirizzo email nelle ultime 36 ore, mentre la 7.2 calcola
 -- il numero di richieste dallo stesso indirizzo IP nelle ultime 36 ore
 
--- 7.1:
+-- Query 7.1:
 
--- 7.2:
+-- Query 7.2:
 
+-- Query 8:
 
+-- Query 9:
+
+-- Query 10:
+
+-- Query 11:
+
+-- Query 12:
+
+-- Query 13: 
 
