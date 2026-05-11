@@ -63,65 +63,100 @@ END$$
 DELIMITER ;
 
 -- Query 4: estrazione della lista degli operatori non coinvolti in missioni in corso
-SELECT u.id, u.nome, u.cognome, u.email
-FROM utente u
-WHERE u.ruolo = 'operatore'
-AND u.id NOT IN (
-    SELECT p.operatore_id
-    FROM partecipazione p
-    JOIN missione m ON m.id = p.missione_id
-    WHERE m.stato = 'in_corso'
-);
+DROP PROCEDURE IF EXISTS Query_4;
+DELIMITER $$
+CREATE PROCEDURE Query_4()
+BEGIN
+    SELECT u.id, u.nome, u.cognome, u.email
+    FROM utente u
+    WHERE u.ruolo = 'operatore'
+    AND u.id NOT IN (
+        SELECT p.operatore_id
+        FROM partecipazione p
+        JOIN missione m ON m.id = p.missione_id
+        WHERE m.stato = 'in_corso'
+    );
+END$$
+DELIMITER ;
 
 -- Query 5: calcolo del numero di missioni svolte da un operatore   
-SELECT u.id, u.nome, u.cognome,
-       COUNT(p.missione_id) AS num_missioni
-FROM utente u
-LEFT JOIN partecipazione p ON p.operatore_id = u.id
-WHERE u.ruolo = 'operatore'
-GROUP BY u.id, u.nome, u.cognome
-ORDER BY num_missioni DESC;
+DROP PROCEDURE IF EXISTS Query_6_1;
+DELIMITER $$
+CREATE PROCEDURE Query_6_1(IN p_anno INT)
+BEGIN
+    SELECT YEAR(inizio) AS anno,
+           AVG(TIMESTAMPDIFF(MINUTE, inizio, fine)) AS durata_media_minuti
+    FROM missione
+    WHERE fine IS NOT NULL
+    AND YEAR(inizio) = p_anno
+    GROUP BY YEAR(inizio);
+END$$
+DELIMITER ;
 
 -- Query 6: questa query abbiamo deciso di dividerla in due sotto-query, entrambe calcolano il tempo medio
 -- di svolgimento, ma la 6.1 calcola il tempo medio di svolgimento delle missioni in un anno specifico, mentre
 -- la 6.2 calcola il tempo medio di svolgimento per ciascun caposquadra
 
 -- Query 6.1:
-SELECT YEAR(inizio) AS anno,
-       AVG(TIMESTAMPDIFF(MINUTE, inizio, fine)) AS durata_media_minuti
-FROM missione
-WHERE fine IS NOT NULL
-AND YEAR(inizio) = 2026
-GROUP BY YEAR(inizio);
+DROP PROCEDURE IF EXISTS Query_6_1;
+DELIMITER $$
+CREATE PROCEDURE Query_6_1(IN p_anno INT)
+BEGIN
+    SELECT YEAR(inizio) AS anno,
+           AVG(TIMESTAMPDIFF(MINUTE, inizio, fine)) AS durata_media_minuti
+    FROM missione
+    WHERE fine IS NOT NULL
+    AND YEAR(inizio) = p_anno
+    GROUP BY YEAR(inizio);
+END$$
+DELIMITER ;
 
 -- Query 6.2:
-SELECT u.id, u.nome, u.cognome,
-       AVG(TIMESTAMPDIFF(MINUTE, m.inizio, m.fine)) AS durata_media_minuti
-FROM partecipazione p
-JOIN missione m ON m.id = p.missione_id
-JOIN utente u ON u.id = p.operatore_id
-WHERE p.ruolo = 'caposquadra'
-AND m.fine IS NOT NULL
-GROUP BY u.id, u.nome, u.cognome
-ORDER BY durata_media_minuti ASC;
+DROP PROCEDURE IF EXISTS Query_6_2;
+DELIMITER $$
+CREATE PROCEDURE Query_6_2()
+BEGIN
+    SELECT u.id, u.nome, u.cognome,
+           AVG(TIMESTAMPDIFF(MINUTE, m.inizio, m.fine)) AS durata_media_minuti
+    FROM partecipazione p
+    JOIN missione m ON m.id = p.missione_id
+    JOIN utente u ON u.id = p.operatore_id
+    WHERE p.ruolo = 'caposquadra'
+    AND m.fine IS NOT NULL
+    GROUP BY u.id, u.nome, u.cognome
+    ORDER BY durata_media_minuti ASC;
+END$$
+DELIMITER ;
 
 -- Query 7: anche questa query è stata divisa in due sotto-query, entrambe calcolano il numero di richieste, ma la 7.1 
 -- calcola il numero di richieste dallo stesso indirizzo email nelle ultime 36 ore, mentre la 7.2 calcola
 -- il numero di richieste dallo stesso indirizzo IP nelle ultime 36 ore
 
 -- Query 7.1:
-SELECT email_segnalante, COUNT(*) AS num_richieste
-FROM richiesta
-WHERE creata_at >= NOW() - INTERVAL 36 HOUR
-GROUP BY email_segnalante
-ORDER BY num_richieste DESC;
+DROP PROCEDURE IF EXISTS Query_7_1;
+DELIMITER $$
+CREATE PROCEDURE Query_7_1()
+BEGIN
+    SELECT email_segnalante, COUNT(*) AS num_richieste
+    FROM richiesta
+    WHERE creata_at >= NOW() - INTERVAL 36 HOUR
+    GROUP BY email_segnalante
+    ORDER BY num_richieste DESC;
+END$$
+DELIMITER ;
 
 -- Query 7.2:
-SELECT ip_origine, COUNT(*) AS num_richieste
-FROM richiesta
-WHERE creata_at >= NOW() - INTERVAL 36 HOUR
-GROUP BY ip_origine
-ORDER BY num_richieste DESC;
+DROP PROCEDURE IF EXISTS Query_7_2;
+DELIMITER $$
+CREATE PROCEDURE Query_7_2()
+BEGIN
+    SELECT ip_origine, COUNT(*) AS num_richieste
+    FROM richiesta
+    WHERE creata_at >= NOW() - INTERVAL 36 HOUR
+    GROUP BY ip_origine
+    ORDER BY num_richieste DESC;
+END$$
+DELIMITER ;
 
 -- Query 8: calcolo del tempo totale di impiego in missione di un certo operatore
 DROP PROCEDURE IF EXISTS Query_8;
@@ -158,24 +193,36 @@ END$$
 DELIMITER ;
 
 -- Query 10: estrazione della lista delle richieste chiuse con risultato non totalmente positivo
-SELECT r.id, r.descrizione, r.nome_segnalante, r.email_segnalante,
-       m.livello_successo, m.fine AS chiusa_il
-FROM richiesta r
-JOIN missione m ON m.richiesta_id = r.id
-WHERE m.fine IS NOT NULL
-AND m.livello_successo < 5
-ORDER BY m.livello_successo ASC;
+DROP PROCEDURE IF EXISTS Query_10;
+DELIMITER $$
+CREATE PROCEDURE Query_10()
+BEGIN
+    SELECT r.id, r.descrizione, r.nome_segnalante, r.email_segnalante,
+           m.livello_successo, m.fine AS chiusa_il
+    FROM richiesta r
+    JOIN missione m ON m.richiesta_id = r.id
+    WHERE m.fine IS NOT NULL
+    AND m.livello_successo < 5
+    ORDER BY m.livello_successo ASC;
+END$$
+DELIMITER ;
 
 -- Query 11: estrazione degli operatori maggiormente coinvolti in missioni con esito non positivo
-SELECT u.id, u.nome, u.cognome,
-   COUNT(p.missione_id) AS missioni_non_positive
-FROM utente u
-JOIN partecipazione p ON p.operatore_id = u.id
-JOIN missione m ON m.id = p.missione_id
-WHERE m.fine IS NOT NULL
-AND m.livello_successo < 5
-GROUP BY u.id, u.nome, u.cognome
-ORDER BY missioni_non_positive DESC;   
+DROP PROCEDURE IF EXISTS Query_11;
+DELIMITER $$
+CREATE PROCEDURE Query_11()
+BEGIN
+    SELECT u.id, u.nome, u.cognome,
+           COUNT(p.missione_id) AS missioni_non_positive
+    FROM utente u
+    JOIN partecipazione p ON p.operatore_id = u.id
+    JOIN missione m ON m.id = p.missione_id
+    WHERE m.fine IS NOT NULL
+    AND m.livello_successo < 5
+    GROUP BY u.id, u.nome, u.cognome
+    ORDER BY missioni_non_positive DESC;
+END$$
+DELIMITER ;  
 
 -- Query 12: estrazione dello storico delle missioni in cui è stato coinvolto un certo mezzo
 DROP PROCEDURE IF EXISTS Query_12;
