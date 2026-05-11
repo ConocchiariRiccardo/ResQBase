@@ -1,52 +1,66 @@
 USE soccorso;
 
 -- Query 1: inserimento di una richiesta di soccorso
-INSERT INTO richiesta(
-   descrizione,
-   indirizzo,
-   latitudine,
-   longitudine,
-   nome_segnalante,
-   email_segnalante,
-   ip_origine,
-   foto_path,
-   token_validazione,
-   stato
-   ) VALUES('Persona ferita in seguito a incidente stradale',
-    'Via Roma 10, L\'Aquila',
-    42.3498,
-    13.3995,
-    'Mario Rossi',
-    'mario.rossi@email.it',
-    '192.168.1.1',
-    NULL,
-    SHA2(CONCAT('mario.rossi@email.it', NOW(), RAND()), 256),
-    'inviata'
-);
+DROP PROCEDURE IF EXISTS Query_1;
+DELIMITER $$
+CREATE PROCEDURE Query_1(
+    IN p_descrizione TEXT,
+    IN p_indirizzo VARCHAR(255),
+    IN p_lat DECIMAL(9,6),
+    IN p_lng DECIMAL(9,6),
+    IN p_nome_segnalante VARCHAR(200),
+    IN p_email_segnalante VARCHAR(255),
+    IN p_ip VARCHAR(45),
+    IN p_foto VARCHAR(500)
+)
+BEGIN
+    INSERT INTO richiesta (
+        descrizione, indirizzo, latitudine, longitudine,
+        nome_segnalante, email_segnalante, ip_origine,
+        foto_path, token_validazione, stato
+    ) VALUES (
+        p_descrizione, p_indirizzo, p_lat, p_lng,
+        p_nome_segnalante, p_email_segnalante, p_ip,
+        p_foto,
+        SHA2(CONCAT(p_email_segnalante, NOW(), RAND()), 256),
+        'inviata'
+    );
+END$$
+DELIMITER ;
 
 -- Query 2: creazione di una missione connessa a una richiesta di soccorso attiva
-UPDATE richiesta SET stato = 'attiva' WHERE id = 1;
-
-INSERT INTO missione (
-   richiesta_id,
-   obiettivo,
-   posizione,
-   inizio
-) VALUES (
-   1,
-   'Prestare soccorso alla persone ferita',
-   'Via Roma 10, L Aquila',
-   NOW()
-);
+DROP PROCEDURE IF EXISTS Query_2;
+DELIMITER $$
+CREATE PROCEDURE Query_2(IN p_richiesta_id INT, IN p_obiettivo TEXT, IN p_posizione VARCHAR(255))
+BEGIN
+    INSERT INTO missione (
+        richiesta_id,
+        obiettivo,
+        posizione,
+        inizio
+    ) VALUES (
+        p_richiesta_id,
+        p_obiettivo,
+        p_posizione,
+        NOW()
+    );
+END$$
+DELIMITER ;
 
 -- Query 3: chiusura di una missione
-UPDATE missione
-SET 
-   stato = 'chiusa',
-   fine = NOW(),
-   livello_successo = 4,
-   commenti = 'Intervento completato con successo'
-WHERE id = 1;
+DROP PROCEDURE IF EXISTS Query_3;
+DELIMITER $$
+CREATE PROCEDURE Query_3(IN p_missione_id INT, IN p_livello INT, IN p_commenti TEXT)
+BEGIN
+    UPDATE missione
+    SET 
+        stato            = 'chiusa',
+        fine             = NOW(),
+        livello_successo = p_livello,
+        commenti         = p_commenti
+    WHERE id = p_missione_id;
+END$$
+DELIMITER ;
 
 -- Query 4: estrazione della lista degli operatori non coinvolti in missioni in corso
 SELECT u.id, u.nome, u.cognome, u.email
@@ -58,6 +72,7 @@ AND u.id NOT IN (
     JOIN missione m ON m.id = p.missione_id
     WHERE m.stato = 'in_corso'
 );
+
 -- Query 5: calcolo del numero di missioni svolte da un operatore   
 SELECT u.id, u.nome, u.cognome,
        COUNT(p.missione_id) AS num_missioni
@@ -66,6 +81,7 @@ LEFT JOIN partecipazione p ON p.operatore_id = u.id
 WHERE u.ruolo = 'operatore'
 GROUP BY u.id, u.nome, u.cognome
 ORDER BY num_missioni DESC;
+
 -- Query 6: questa query abbiamo deciso di dividerla in due sotto-query, entrambe calcolano il tempo medio
 -- di svolgimento, ma la 6.1 calcola il tempo medio di svolgimento delle missioni in un anno specifico, mentre
 -- la 6.2 calcola il tempo medio di svolgimento per ciascun caposquadra
@@ -108,26 +124,38 @@ GROUP BY ip_origine
 ORDER BY num_richieste DESC;
 
 -- Query 8: calcolo del tempo totale di impiego in missione di un certo operatore
-SELECT u.id, u.nome, u.cognome,
-       SUM(TIMESTAMPDIFF(MINUTE, m.inizio, m.fine)) AS minuti_totali,
-       ROUND(SUM(TIMESTAMPDIFF(MINUTE, m.inizio, m.fine)) / 60.0, 2) AS ore_totali
-FROM utente u
-JOIN partecipazione p ON p.operatore_id = u.id
-JOIN missione m ON m.id = p.missione_id
-WHERE m.fine IS NOT NULL
-AND u.id = 1
-GROUP BY u.id, u.nome, u.cognome;
+DROP PROCEDURE IF EXISTS Query_8;
+DELIMITER $$
+CREATE PROCEDURE Query_8(IN p_operatore_id INT)
+BEGIN
+    SELECT u.id, u.nome, u.cognome,
+           SUM(TIMESTAMPDIFF(MINUTE, m.inizio, m.fine)) AS minuti_totali,
+           ROUND(SUM(TIMESTAMPDIFF(MINUTE, m.inizio, m.fine)) / 60.0, 2) AS ore_totali
+    FROM utente u
+    JOIN partecipazione p ON p.operatore_id = u.id
+    JOIN missione m ON m.id = p.missione_id
+    WHERE m.fine IS NOT NULL
+    AND u.id = p_operatore_id
+    GROUP BY u.id, u.nome, u.cognome;
+END$$
+DELIMITER ;
 
 -- Query 9: estrazione delle missioni svoltesi negli ultimi 3 anni nello stesso luogo di una missione data
-SELECT m.*
-FROM missione m
-WHERE m.posizione = (
-    SELECT posizione
-    FROM missione
-    WHERE id = 1
-)
-AND m.id != 1
-AND m.inizio >= NOW() - INTERVAL 3 YEAR;
+DROP PROCEDURE IF EXISTS Query_9;
+DELIMITER $$
+CREATE PROCEDURE Query_9(IN p_missione_id INT)
+BEGIN
+    SELECT m.*
+    FROM missione m
+    WHERE m.posizione = (
+        SELECT posizione
+        FROM missione
+        WHERE id = p_missione_id
+    )
+    AND m.id != p_missione_id
+    AND m.inizio >= NOW() - INTERVAL 3 YEAR;
+END$$
+DELIMITER ;
 
 -- Query 10: estrazione della lista delle richieste chiuse con risultato non totalmente positivo
 SELECT r.id, r.descrizione, r.nome_segnalante, r.email_segnalante,
@@ -150,22 +178,34 @@ GROUP BY u.id, u.nome, u.cognome
 ORDER BY missioni_non_positive DESC;   
 
 -- Query 12: estrazione dello storico delle missioni in cui è stato coinvolto un certo mezzo
-SELECT me.id AS mezzo_id, me.nome AS mezzo_nome,
-       m.id AS missione_id, m.obiettivo, m.posizione,
-       m.inizio, m.fine, m.livello_successo
-FROM missione_mezzo mm
-JOIN mezzo me ON me.id = mm.mezzo_id
-JOIN missione m ON m.id = mm.missione_id
-WHERE me.id = 1
-ORDER BY m.inizio DESC;
+DROP PROCEDURE IF EXISTS Query_12;
+DELIMITER $$
+CREATE PROCEDURE Query_12(IN p_mezzo_id INT)
+BEGIN
+    SELECT me.id AS mezzo_id, me.nome AS mezzo_nome,
+           m.id AS missione_id, m.obiettivo, m.posizione,
+           m.inizio, m.fine, m.livello_successo
+    FROM missione_mezzo mm
+    JOIN mezzo me ON me.id = mm.mezzo_id
+    JOIN missione m ON m.id = mm.missione_id
+    WHERE me.id = p_mezzo_id
+    ORDER BY m.inizio DESC;
+END$$
+DELIMITER ;
 
 -- Query 13: calcolo delle ore d'uso di un certo materiale
-SELECT ma.id AS materiale_id, ma.nome AS materiale_nome,
-       SUM(TIMESTAMPDIFF(MINUTE, m.inizio, m.fine)) AS minuti_uso,
-       ROUND(SUM(TIMESTAMPDIFF(MINUTE, m.inizio, m.fine)) / 60.0, 2) AS ore_uso
-FROM missione_materiale mm
-JOIN materiale ma ON ma.id = mm.materiale_id
-JOIN missione m ON m.id = mm.missione_id
-WHERE m.fine IS NOT NULL
-AND ma.id = 1
-GROUP BY ma.id, ma.nome;
+DROP PROCEDURE IF EXISTS Query_13;
+DELIMITER $$
+CREATE PROCEDURE Query_13(IN p_materiale_id INT)
+BEGIN
+    SELECT ma.id AS materiale_id, ma.nome AS materiale_nome,
+           SUM(TIMESTAMPDIFF(MINUTE, m.inizio, m.fine)) AS minuti_uso,
+           ROUND(SUM(TIMESTAMPDIFF(MINUTE, m.inizio, m.fine)) / 60.0, 2) AS ore_uso
+    FROM missione_materiale mm
+    JOIN materiale ma ON ma.id = mm.materiale_id
+    JOIN missione m ON m.id = mm.missione_id
+    WHERE m.fine IS NOT NULL
+    AND ma.id = p_materiale_id
+    GROUP BY ma.id, ma.nome;
+END$$
+DELIMITER ;
