@@ -48,5 +48,25 @@ SET
    commenti = 'Intervento completato con successo'
 WHERE id = 1;
 
-   
+-- Query 4: estrazione della lista degli operatori non coinvolti in missioni in corso
+
+-- Query 5: calcolo del numero di missioni svolte da un operatore   
+
+-- Query 6: questa query abbiamo deciso di dividerla in due sotto-query, entrambe calcolano il tempo medio
+-- di svolgimento, ma la 6.1 calcola il tempo medio di svolgimento delle missioni in un anno specifico, mentre
+-- la 6.2 calcola il tempo medio di svolgimento per ciascun caposquadra
+
+-- Query 6.1:
+
+-- Query 6.2:
+
+-- Query 7: anche questa query è stata divisa in due sotto-query, entrambe calcolano il numero di richieste, ma la 7.1 
+-- calcola il numero di richieste dallo stesso indirizzo email nelle ultime 36 ore, mentre la 7.2 calcola
+-- il numero di richieste dallo stesso indirizzo IP nelle ultime 36 ore
+
+-- 7.1:
+
+-- 7.2:
+
+
 
