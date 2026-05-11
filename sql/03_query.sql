@@ -108,11 +108,33 @@ GROUP BY ip_origine
 ORDER BY num_richieste DESC;
 
 -- Query 8:
-
+SELECT u.id, u.nome, u.cognome,
+       SUM(TIMESTAMPDIFF(MINUTE, m.inizio, m.fine)) AS minuti_totali,
+       ROUND(SUM(TIMESTAMPDIFF(MINUTE, m.inizio, m.fine)) / 60.0, 2) AS ore_totali
+FROM utente u
+JOIN partecipazione p ON p.operatore_id = u.id
+JOIN missione m ON m.id = p.missione_id
+WHERE m.fine IS NOT NULL
+AND u.id = 1
+GROUP BY u.id, u.nome, u.cognome;
 -- Query 9:
-
+SELECT m.*
+FROM missione m
+WHERE m.posizione = (
+    SELECT posizione
+    FROM missione
+    WHERE id = 1
+)
+AND m.id != 1
+AND m.inizio >= NOW() - INTERVAL 3 YEAR;
 -- Query 10:
-
+SELECT r.id, r.descrizione, r.nome_segnalante, r.email_segnalante,
+       m.livello_successo, m.fine AS chiusa_il
+FROM richiesta r
+JOIN missione m ON m.richiesta_id = r.id
+WHERE m.fine IS NOT NULL
+AND m.livello_successo < 5
+ORDER BY m.livello_successo ASC;
 -- Query 11:
 
 -- Query 12:
