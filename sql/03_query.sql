@@ -31,18 +31,20 @@ DELIMITER ;
 -- Query 2: creazione di una missione connessa a una richiesta di soccorso attiva
 DROP PROCEDURE IF EXISTS Query_2;
 DELIMITER $$
-CREATE PROCEDURE Query_2(IN p_richiesta_id INT, IN p_obiettivo TEXT, IN p_posizione VARCHAR(255))
+CREATE PROCEDURE Query_2(
+    IN p_richiesta_id INT,
+    IN p_obiettivo TEXT,
+    IN p_posizione VARCHAR(255),
+    IN p_admin_id INT
+)
 BEGIN
+    UPDATE richiesta SET stato = 'attiva', validata_at = NOW()
+    WHERE id = p_richiesta_id;
+
     INSERT INTO missione (
-        richiesta_id,
-        obiettivo,
-        posizione,
-        inizio
+        richiesta_id, obiettivo, posizione, inizio, admin_id
     ) VALUES (
-        p_richiesta_id,
-        p_obiettivo,
-        p_posizione,
-        NOW()
+        p_richiesta_id, p_obiettivo, p_posizione, NOW(), p_admin_id
     );
 END$$
 DELIMITER ;
