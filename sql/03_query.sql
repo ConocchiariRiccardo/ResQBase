@@ -88,13 +88,24 @@ WHERE p.ruolo = 'caposquadra'
 AND m.fine IS NOT NULL
 GROUP BY u.id, u.nome, u.cognome
 ORDER BY durata_media_minuti ASC;
+
 -- Query 7: anche questa query è stata divisa in due sotto-query, entrambe calcolano il numero di richieste, ma la 7.1 
 -- calcola il numero di richieste dallo stesso indirizzo email nelle ultime 36 ore, mentre la 7.2 calcola
 -- il numero di richieste dallo stesso indirizzo IP nelle ultime 36 ore
 
 -- Query 7.1:
+SELECT email_segnalante, COUNT(*) AS num_richieste
+FROM richiesta
+WHERE creata_at >= NOW() - INTERVAL 36 HOUR
+GROUP BY email_segnalante
+ORDER BY num_richieste DESC;
 
 -- Query 7.2:
+SELECT ip_origine, COUNT(*) AS num_richieste
+FROM richiesta
+WHERE creata_at >= NOW() - INTERVAL 36 HOUR
+GROUP BY ip_origine
+ORDER BY num_richieste DESC;
 
 -- Query 8:
 
