@@ -46,7 +46,7 @@ CREATE TRIGGER trg_check_update_missione
 BEFORE UPDATE ON missione
 FOR EACH ROW
 BEGIN
-  -- (ex T3) controlli sulla chiusura
+  -- controlli sulla chiusura
   IF NEW.stato = 'chiusa' THEN
     IF NEW.fine IS NULL THEN
       SIGNAL SQLSTATE '45000'
@@ -58,14 +58,14 @@ BEGIN
     END IF;
   END IF;
 
-  -- (ex T7) fine deve essere successiva all'inizio
+  -- fine deve essere successiva all'inizio
   IF NEW.fine IS NOT NULL AND NEW.fine <= NEW.inizio THEN
     SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'La data di fine deve essere successiva alla data di inizio.';
   END IF;
 END$$
 
--- T4.1: PRIMA di creare la missione, verifica che la richiesta sia attiva
+-- Trigger 4.1: PRIMA di creare la missione, verifica che la richiesta sia attiva
 DROP TRIGGER IF EXISTS trg_check_richiesta_attiva$$
 CREATE TRIGGER trg_check_richiesta_attiva
 BEFORE INSERT ON missione
@@ -83,7 +83,7 @@ BEGIN
     END IF;
 END$$
 
--- T4.2: DOPO la creazione, porta la richiesta a 'in_corso'
+-- Trigger 4.2: DOPO la creazione, porta la richiesta a 'in_corso'
 DROP TRIGGER IF EXISTS trg_aggiorna_stato_richiesta$$
 CREATE TRIGGER trg_aggiorna_stato_richiesta
 AFTER INSERT ON missione
@@ -94,7 +94,7 @@ BEGIN
     WHERE id = NEW.richiesta_id;
 END$$
 
--- T4.3: DOPO la chiusura della missione, porta la richiesta a 'chiusa'
+-- Trigger 4.3: DOPO la chiusura della missione, porta la richiesta a 'chiusa'
 DROP TRIGGER IF EXISTS trg_chiudi_richiesta$$
 CREATE TRIGGER trg_chiudi_richiesta
 AFTER UPDATE ON missione
