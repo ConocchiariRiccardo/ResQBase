@@ -59,7 +59,7 @@ INSERT INTO materiale (nome, descrizione) VALUES
 ('Defibrillatore',     'AED portatile con istruzioni vocali'),
 ('Scala telescopica',  'Scala allungabile fino a 8 metri');
 
--- Richieste
+-- Richieste (tutte attive inizialmente)
 INSERT INTO richiesta (
     descrizione, indirizzo, latitudine, longitudine,
     nome_segnalante, email_segnalante, ip_origine,
@@ -69,14 +69,14 @@ INSERT INTO richiesta (
     'Persona anziana caduta in strada',
     'Via Roma 10, L\'Aquila', 42.3498, 13.3995,
     'Carlo Esposito', 'carlo@mail.it', '192.168.1.1',
-    SHA2('tok1', 256), 'chiusa',
+    SHA2('tok1', 256), 'attiva',
     '2026-01-10 08:00:00', '2026-01-10 08:05:00'
 ),
 (
     'Incidente stradale con feriti',
     'SS17 km 12, L\'Aquila', 42.3510, 13.4010,
     'Anna Giusti', 'anna@mail.it', '10.0.0.5',
-    SHA2('tok2', 256), 'in_corso',
+    SHA2('tok2', 256), 'attiva',
     '2026-03-15 14:00:00', '2026-03-15 14:10:00'
 ),
 (
@@ -94,7 +94,7 @@ INSERT INTO richiesta (
     NOW(), NULL
 );
 
--- Missioni
+-- Missioni (il trigger aggiornerà automaticamente lo stato delle richieste)
 INSERT INTO missione (
     richiesta_id, obiettivo, posizione,
     inizio, fine, livello_successo, commenti, stato, admin_id
@@ -103,9 +103,9 @@ INSERT INTO missione (
     1,
     'Prestare soccorso a persona anziana caduta',
     'Via Roma 10, L\'Aquila',
-    '2026-01-10 08:30:00', '2026-01-10 10:00:00',
-    5, 'Intervento riuscito, paziente trasportato in ospedale',
-    'chiusa', 1
+    '2026-01-10 08:30:00', NULL,
+    NULL, NULL,
+    'in_corso', 1
 ),
 (
     2,
@@ -115,6 +115,14 @@ INSERT INTO missione (
     NULL, NULL,
     'in_corso', 1
 );
+
+-- Chiudi la missione 1 (il trigger aggiornerà anche la richiesta)
+UPDATE missione
+SET stato = 'chiusa',
+    fine = '2026-01-10 10:00:00',
+    livello_successo = 5,
+    commenti = 'Intervento riuscito, paziente trasportato in ospedale'
+WHERE id = 1;
 
 -- Partecipazioni
 INSERT INTO partecipazione (missione_id, operatore_id, ruolo) VALUES
