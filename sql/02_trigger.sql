@@ -142,12 +142,12 @@ BEGIN
    END IF;
 END$$ 
 
--- Trigger 8: noi il trigger 8 lo abbiamo diviso in 3 sotto-trigger in quanto
+-- Trigger 7: noi il trigger 7 lo abbiamo diviso in 3 sotto-trigger in quanto
 -- rappresentano tutti e tre l'immutabilità dello storico ma in tre contesti diversi:
--- 8.1 rappresenta l'immutabilità dello storico quando la missione è chiusa,
--- 8.2 l'immutabilità dello storico per missione_mezzo e 8.3 l'immutabilità dello storico per missione_materiale
+-- 7.1 rappresenta l'immutabilità dello storico quando la missione è chiusa,
+-- 7.2 l'immutabilità dello storico per missione_mezzo e 7.3 l'immutabilità dello storico per missione_materiale
 
--- Trigger 8.1: 
+-- Trigger 7.1: 
 DROP TRIGGER IF EXISTS trg_check_immutabilita_storico$$
 CREATE TRIGGER trg_check_immutabilita_storico
 BEFORE DELETE ON partecipazione
@@ -165,7 +165,7 @@ BEGIN
     END IF;
 END$$
 
--- Trigger 8.2:
+-- Trigger 7.2:
 DROP TRIGGER IF EXISTS trg_check_immutabilita_mezzo$$
 CREATE TRIGGER trg_check_immutabilita_mezzo
 BEFORE DELETE ON missione_mezzo
@@ -183,7 +183,7 @@ BEGIN
     END IF;
 END$$
 
--- Trigger 8.3: 
+-- Trigger 7.3: 
 DROP TRIGGER IF EXISTS trg_check_immutabilita_materiale$$
 CREATE TRIGGER trg_check_immutabilita_materiale
 BEFORE DELETE ON missione_materiale
